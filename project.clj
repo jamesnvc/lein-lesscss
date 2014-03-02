@@ -14,7 +14,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses/>
 
-(defproject jamesnvc/lein-lesscss "1.3.1"
+(defproject jamesnvc/lein-lesscss "1.3.2"
   :url "https://github.com/jamesnvc/lein-lesscss"
   :description "Leiningen plugin for compiling Less CSS files."
   :license {:name "LGPLv3"
