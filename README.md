@@ -7,7 +7,7 @@ This fork allows having the less files be automatically recompiled on change.
 
 ## Usage
 
-* Add `[jamesnvc/lein-lesscss "1.2"]` to the  `:plugins` section in your
+* Add `[jamesnvc/lein-lesscss "1.3.0"]` to the  `:plugins` section in your
   `project.clj` or `~/.lein/profiles.clj` (the latter is Leiningen 2-specific).
 
 * Use the `lesscss` task to perform the compilation.
