@@ -3,9 +3,12 @@
 This plugin allows the user to compile [Less CSS](http://lesscss.org/) resources
 to be used in the application.
 
+This fork allows having the less files be automatically recompiled on change.
+
 ## Usage
 
-* Add `[lein-lesscss "1.2"]` to the  `:plugins` section in your `project.clj` or `~/.lein/profiles.clj` (the latter is Leiningen 2-specific).
+* Add `[jamesnvc/lein-lesscss "1.2"]` to the  `:plugins` section in your
+  `project.clj` or `~/.lein/profiles.clj` (the latter is Leiningen 2-specific).
 
 * Use the `lesscss` task to perform the compilation.
 
@@ -19,6 +22,9 @@ For example:
     :lesscss-paths ["less" "path/to/other/location"]
     :lesscss-output-path "resource/public/css"
     ...
+
+* With the argument "auto" (i.e. invoked as `lein lesscss auto`) it will
+  automatically recompile any changed less files
 
 ## Contributors
 
