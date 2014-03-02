@@ -17,40 +17,40 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses/>
 
-(ns leiningen.file-utils)
+(ns leiningen.lesscss.file-utils)
 
-;; The default extensions for identifying Less CSS files.
-(def less-file-extensions #{"less"})
+(def less-file-extensions
+  "The default extensions for identifying Less CSS files."
+  #{"less"})
 
-;; Convert the argument to a java.io.File
-(defn to-file [o]
+(defn to-file
+  "Convert the argument to a java.io.File"
+  [o]
   (cond (instance? java.io.File o) o
         (instance? java.lang.String o) (new java.io.File o)
-        :else (new java.io.File (str o))
-        )
-  )
+        :else (new java.io.File (str o))))
 
-;; Replace the file extension with another one.
-(defn replace-extension [filename new-extension]
-   (clojure.string/replace filename  (re-pattern (str (org.apache.commons.io.FilenameUtils/getExtension filename) "$")) new-extension)
-  )
+(defn replace-extension
+  "Replace the file extension with another one."
+  [filename new-extension]
+  (clojure.string/replace
+    filename
+    (re-pattern (str (org.apache.commons.io.FilenameUtils/getExtension filename) "$"))
+    new-extension))
 
-;; Check if the file is a Less CSS file by looking at its extension.
-(defn is-less-file? [x]  
-  (let [file (to-file x)]       
+(defn is-less-file?
+  "Check if the file is a Less CSS file by looking at its extension."
+  [x]
+  (let [file (to-file x)]
     (and
-     (.isFile file)
-     (org.apache.commons.io.FilenameUtils/isExtension (.getName file) less-file-extensions)
-     )
-    )
-  )
+      (.isFile file)
+      (org.apache.commons.io.FilenameUtils/isExtension (.getName file) less-file-extensions))))
 
-;; Recursively inspect the path to discover Less CSS files.
-(defn list-less-files [path]
+(defn list-less-files
+  "Recursively inspect the path to discover Less CSS files."
+  [path]
   (let [dir (to-file path)
         all-files (.listFiles dir)
         directories (filter #(.isDirectory %) all-files)
-        standard-files (filter is-less-file? all-files)
-        ]
-    (concat standard-files  (mapcat list-less-files directories))
-    ))
+        standard-files (filter is-less-file? all-files)]
+    (concat standard-files  (mapcat list-less-files directories))))
