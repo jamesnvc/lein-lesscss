@@ -20,6 +20,6 @@
   :license {:name "LGPLv3"
             :url "http://www.gnu.org/licenses/lgpl-3.0.en.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.lesscss/lesscss "1.3.0"]
+                 [org.lesscss/lesscss "1.3.3"]
                  [watchtower "0.1.1"]]
   :eval-in-leiningen true)
