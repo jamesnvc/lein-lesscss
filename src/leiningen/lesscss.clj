@@ -18,7 +18,7 @@
 ;; along with this program. If not, see <http://www.gnu.org/licenses/>
 
 (ns leiningen.lesscss
-  (:use [leiningen.file-utils :only [list-less-files to-file replace-extension]]
+  (:use [leiningen.lesscss.file-utils :only [list-less-files to-file replace-extension]]
         [clojure.string :only [join]])
   (:require [leiningen.core.main :as main]))
 
