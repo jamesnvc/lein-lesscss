@@ -52,7 +52,9 @@
 
 
 ;; Leiningen task.
-(defn lesscss "Compile Less CSS resources." [project & args]
+(defn lesscss
+  "Compile Less CSS resources."
+  [project & args]
   (let [lesscss-paths (:lesscss-paths project (default-lesscss-paths project))
         lesscss-output-path (or (:lesscss-output-path project)
                                 (:compile-path project))]
