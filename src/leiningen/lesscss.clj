@@ -22,26 +22,30 @@
         [clojure.string :only [join]])
   (:require [leiningen.core.main :as main]))
 
-;; Create an instance of the Less CSS compiler.
-(def lesscss-compiler (delay (new org.lesscss.LessCompiler)))
+(def lesscss-compiler
+  "Create an instance of the Less CSS compiler."
+  (delay (new org.lesscss.LessCompiler)))
 
-;; Return a list containing a single path where Less files are stored.
-(defn default-lesscss-paths [project]
+(defn default-lesscss-paths
+  "Return a list containing a single path where Less files are stored."
+  [project]
   (cons (org.apache.commons.io.FilenameUtils/normalize  (str (:root project) "/less")) nil))
 
-;; Get the file where to store the compiled output. Its path will depend on the relative path in the source tree.
-;; For example, if the path where less files are stored is '/.../projectdir/less/', the current less file is
-;; '/.../projectdir/less/foo/bar.less' and the output path is '/.../projectdir/target/classes' then
-;; the output path will be '/.../projectdir/target/classes/foo/bar.less'
-(defn get-output-file [base-path file output-path]
+(defn get-output-file
+  "Get the file where to store the compiled output. Its path will depend on the relative path in the source tree.
+  For example, if the path where less files are stored is '/.../projectdir/less/', the current less file is
+  '/.../projectdir/less/foo/bar.less' and the output path is '/.../projectdir/target/classes' then
+  the output path will be '/.../projectdir/target/classes/foo/bar.less'"
+  [base-path file output-path]
   (let [relative-path (clojure.string/replace (.getAbsolutePath file) base-path "")]
     (to-file
       (replace-extension
         (org.apache.commons.io.FilenameUtils/normalize (str output-path "/" relative-path))
         "css"))))
 
-;; Compile the Less CSS file to the specified output file.
-(defn lesscss-compile [project prefix less-file output-path]
+(defn lesscss-compile
+  "Compile the Less CSS file to the specified output file."
+  [project prefix less-file output-path]
   (let [output-file (get-output-file prefix less-file output-path)]
     (try
       (when (or (not (.exists output-file))
@@ -49,7 +53,6 @@
         (.compile @lesscss-compiler less-file output-file))
       (catch org.lesscss.LessException e
         (str "ERROR: compiling " less-file ": " (.getMessage e))))))
-
 
 ;; Leiningen task.
 (defn lesscss
