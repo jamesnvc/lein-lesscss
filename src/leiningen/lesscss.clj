@@ -36,8 +36,9 @@
 (defn get-output-file [base-path file output-path]
   (let [relative-path (clojure.string/replace (.getAbsolutePath file) base-path "")]
     (to-file
-     (replace-extension (org.apache.commons.io.FilenameUtils/normalize (str output-path "/" relative-path)) "css")
-     )))
+      (replace-extension
+        (org.apache.commons.io.FilenameUtils/normalize (str output-path "/" relative-path))
+        "css"))))
 
 ;; Compile the Less CSS file to the specified output file.
 (defn lesscss-compile [project prefix less-file output-path]
@@ -50,18 +51,17 @@
         (str "ERROR: compiling " less-file ": " (.getMessage e))))))
 
 
-;; Leiningen task. 
+;; Leiningen task.
 (defn lesscss "Compile Less CSS resources." [project & args]
-  (let [lesscss-paths (:lesscss-paths project (default-lesscss-paths project)) 
+  (let [lesscss-paths (:lesscss-paths project (default-lesscss-paths project))
         lesscss-output-path (or (:lesscss-output-path project)
-                                (:compile-path project))
-        ]
+                                (:compile-path project))]
     ;; Iterate over all the Less CSS files and compile them
     (doseq [less-path lesscss-paths]
       (let [less-files (list-less-files less-path)
             errors (doall
                      (filter identity
                              (for [less-file less-files]
-                             (lesscss-compile project less-path less-file lesscss-output-path))))]
+                               (lesscss-compile project less-path less-file lesscss-output-path))))]
         (if (not-empty errors)
           (main/abort (join "\n" errors)))))))
