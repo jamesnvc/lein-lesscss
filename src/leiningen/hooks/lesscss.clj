@@ -18,14 +18,16 @@
 ;; along with this program. If not, see <http://www.gnu.org/licenses/>
 
 (ns leiningen.hooks.lesscss
-  (:require [leiningen.compile] 
+  (:require [leiningen.compile]
             [leiningen.core.main :as main]
-            [robert.hooke])
-  (:use [leiningen.lesscss :only (lesscss)]))
+            [robert.hooke]
+            [leiningen.lesscss :refer [lesscss]]))
 
 (defn run-less-after-compile [f & args]
   (apply f args)
   (apply lesscss args))
 
-(robert.hooke/add-hook #'leiningen.compile/compile
-  run-less-after-compile)
+(defn activate
+  "Add lesscss hooks into the project"
+  []
+  (robert.hooke/add-hook #'leiningen.compile/compile run-less-after-compile))
