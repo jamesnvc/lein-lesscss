@@ -21,11 +21,12 @@
   (:require [leiningen.core.main :as main]
             [leiningen.lesscss.file-utils :refer [list-less-files to-file replace-extension]]
             [clojure.string :refer [join]]
-            [watchtower.core :as watcher]))
+            [watchtower.core :as watcher])
+  (:import (com.asual.lesscss LessEngine LessException)))
 
 (def ^:dynamic lesscss-compiler
   "Create an instance of the Less CSS compiler."
-  (delay (new org.lesscss.LessCompiler)))
+  (delay (LessEngine. )))
 
 (defn default-lesscss-paths
   "Return a list containing a single path where Less files are stored."
@@ -52,7 +53,7 @@
       (when (or (not (.exists output-file))
                 (> (.lastModified less-file) (.lastModified output-file)))
         (.compile @lesscss-compiler less-file output-file))
-      (catch org.lesscss.LessException e
+      (catch LessException e
         (println "ERROR: compiling " less-file ": " (.getMessage e))))))
 
 (defn watch-less-files
@@ -66,7 +67,7 @@
                          (doseq [c changes]
                            (println "Compiling" (.getPath c))
                            ; Need to make sure that we have a compiler in the same context as this thread
-                           (binding [lesscss-compiler (delay (new org.lesscss.LessCompiler))]
+                           (binding [lesscss-compiler (delay (LessEngine. ))]
                              (lesscss-compile lesscss-path c lesscss-output-path)))))))
 
 
