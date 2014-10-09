@@ -20,13 +20,49 @@
 (ns leiningen.lesscss
   (:require [leiningen.core.main :as main]
             [leiningen.lesscss.file-utils :refer [list-less-files to-file replace-extension]]
+            [leiningen.core.classpath :as cp]
             [clojure.string :refer [join]]
-            [watchtower.core :as watcher])
-  (:import (com.asual.lesscss LessEngine LessException)))
+            [watchtower.core :as watcher]
+            [clojure.java.io :as io]
+            [classlojure.core :as cl])
+  (:import (com.asual.lesscss LessEngine LessException LessOptions)
+           (com.asual.lesscss.loader ChainedResourceLoader
+                                     ClasspathResourceLoader
+                                     FilesystemResourceLoader
+                                     HTTPResourceLoader
+                                     ResourceLoader
+                                     JNDIResourceLoader
+                                     UnixNewlinesResourceLoader)))
 
-(def ^:dynamic lesscss-compiler
+(defn lesscss-compiler
   "Create an instance of the Less CSS compiler."
-  (delay (LessEngine. )))
+  [project]
+  (LessEngine. (LessOptions.)
+               (UnixNewlinesResourceLoader.
+                 (let [loaders [(FilesystemResourceLoader.)
+                                (ClasspathResourceLoader.
+                                  (->> (cp/get-classpath project)
+                                       (map io/file)
+                                       cl/classlojure))
+                                (JNDIResourceLoader.)
+                                (HTTPResourceLoader.)]]
+                   (reify
+                     ResourceLoader
+
+                     (^boolean exists [_ ^String resource #^"[Ljava.lang.String;" paths]
+                       (loop [loaders loaders]
+                         (if (empty? loaders)
+                           false
+                           (or (.exists (first loaders) resource paths)
+                               (recur (rest loaders))))))
+
+                     (^String load [_ ^String resource #^"[Ljava.lang.String;" paths ^String charset]
+                       (loop [loaders loaders]
+                         (if (empty? loaders)
+                           (throw (java.io.IOException. (str "No such file " resource)))
+                           (or (and (.exists (first loaders) resource paths)
+                                    (.load (first loaders) resource paths charset))
+                               (recur (rest loaders)))))))))))
 
 (defn default-lesscss-paths
   "Return a list containing a single path where Less files are stored."
@@ -47,18 +83,18 @@
 
 (defn lesscss-compile
   "Compile the Less CSS file to the specified output file."
-  [prefix less-file output-path]
+  [project prefix less-file output-path]
   (let [output-file (get-output-file prefix less-file output-path)]
     (try
       (when (or (not (.exists output-file))
                 (> (.lastModified less-file) (.lastModified output-file)))
-        (.compile @lesscss-compiler less-file output-file))
+        (.compile (lesscss-compiler project) less-file output-file))
       (catch LessException e
         (println "ERROR: compiling " less-file ": " (.getMessage e))))))
 
 (defn watch-less-files
   "Watch for changes in the less files and recompile on change"
-  [lesscss-path lesscss-output-path]
+  [project lesscss-path lesscss-output-path]
   (println "Watching " lesscss-path)
   (watcher/watcher [lesscss-path]
     (watcher/rate 50)
@@ -66,9 +102,7 @@
     (watcher/on-change (fn [changes]
                          (doseq [c changes]
                            (println "Compiling" (.getPath c))
-                           ; Need to make sure that we have a compiler in the same context as this thread
-                           (binding [lesscss-compiler (delay (LessEngine. ))]
-                             (lesscss-compile lesscss-path c lesscss-output-path)))))))
+                           (lesscss-compile project lesscss-path c lesscss-output-path))))))
 
 
 ;; Leiningen task.
@@ -84,11 +118,11 @@
             errors (doall
                      (filter identity
                              (for [less-file less-files]
-                               (lesscss-compile less-path less-file lesscss-output-path))))]
+                               (lesscss-compile project less-path less-file lesscss-output-path))))]
         (when (not-empty errors)
           (main/abort (join "\n" errors)))))
     (when (= (first args) "auto")
-      (-> (map #(watch-less-files % lesscss-output-path) lesscss-paths)
+      (-> (map #(watch-less-files project % lesscss-output-path) lesscss-paths)
           doall
           first
           deref))))
